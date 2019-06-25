@@ -1,0 +1,30 @@
+.ReactTable {
+    color: white;
+}
+
+.ReactTable a {
+    color: white;
+}
+
+.rt-thead {
+    font-weight: bold;
+}
+
+.row-online,
+.row-online a {
+    background: #53a000 !important;
+    color: #d8f7ce;
+    text-decoration: none;
+}
+
+.row-differ,
+.row-differ a {
+    background: #FFC859 !important;
+    color: #734d00;
+    text-decoration: none;
+}
+
+.rt-tr:hover {
+    background: #666666;
+    opacity: 0.5;
+}
