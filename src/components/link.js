@@ -4,7 +4,7 @@ class Link extends Component {
 
   constructor(props) {
     super(props);
-    // console.log(props)
+    console.log('link props', props)
     this.state = { error: false, loading: false, text: '' };
     this.onClick = this.onClick.bind(this);
   }
@@ -35,7 +35,7 @@ class Link extends Component {
             err_str = "Cors Disabled";
         }
         console.error("Nonon", e);
-        this.innerText = err_str;
+        // this.innerText = err_str;
         this.setState({
           text: err_str,
           error: true
@@ -44,8 +44,9 @@ class Link extends Component {
         // setError(true);
     })
     .finally(() => {
-      this.setState({loading: false});
-      console.log(this.state);
+      this.setState({loading: false})
+      // console.log(this.state);
+      this.props.checkStatus();
 //         const row = getParentRow(this);
 // //            const elementToCompare = document.querySelector("#"+this.getAttribute('data-compare-to')+'');
 //         const hrefCompareTo = this.getAttribute('data-compare-to')
@@ -63,7 +64,7 @@ class Link extends Component {
   render() {
     const { href, children } = this.props;
     const loading = this.state.loading && 'Loading...';
-    const text = this.state.text || loading || children;
+    const text = loading || this.state.text || children;
     if (!href || !children) {
       return null;
     }

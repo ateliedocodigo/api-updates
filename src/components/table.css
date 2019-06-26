@@ -10,6 +10,13 @@
     font-weight: bold;
 }
 
+.row-offline,
+.row-offline a {
+    background: #a00000;
+    color: #f7cece;
+    text-decoration: none;
+}
+
 .row-online,
 .row-online a {
     background: #53a000 !important;
@@ -27,4 +34,8 @@
 .rt-tr:hover {
     background: #666666;
     opacity: 0.5;
+}
+
+.rt-tr-group {
+
 }
