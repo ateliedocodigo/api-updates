@@ -61,7 +61,7 @@ class Table extends React.Component {
         accessor: 'name', // String-based value accessors!
         width: 150,
       }, {
-        // Header: 'Call',
+        Header: () => <button>Call</button>,
         width: 50,
         Cell: props => <button>call</button>
       }, {
