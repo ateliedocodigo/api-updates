@@ -3,6 +3,7 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import Link from './link';
 import './table.css';
+import { async } from 'q';
 
 class Table extends React.Component {
   constructor(props) {
@@ -11,7 +12,9 @@ class Table extends React.Component {
     // this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.updateRow = this.updateRow.bind(this);
-    this.renderEditable = this.renderEditable.bind(this);
+    this.renderLink = this.renderLink.bind(this);
+    // this.triggerRowLinks = this.triggerRowLinks.bind(this);
+    
   }
 
   handleSubmit(e) {
@@ -30,16 +33,16 @@ class Table extends React.Component {
         return r.json();
     })
     .then((d) => {
-        console.log(d['projects']);
+        // console.log(d['projects']);
         this.setState({
             projects: d['projects'].map(project => ({ ...project, status: '' }))
         });
-        console.log(this.state.projects);
+        // console.log(this.state.projects);
     })
     .catch((e) => {
         let err_str = e.toString()
         if (e instanceof TypeError) {
-            err_str = "Cors Disabled"
+          err_str = "Cors Disabled";
         }
         console.error("Nonon", err_str, e);
     })
@@ -48,48 +51,94 @@ class Table extends React.Component {
     });
   }
 
-  updateRow(error) {
-      this.setState({
-          error,
-      })
+  triggerLink = async (row, column, compare_to) => {
+    let projects = [...this.state.projects];
+
+    const result = await this.getLinkStatus(row, column);
+
+    projects[row]['status'] = this.compareResults(result, {error:projects[row]['status']=='offline'});
+    projects = this.updateText(row, column, result.text, projects);
+    this.setState({ projects });
   }
 
-  renderEditable(cellInfo) {
+  triggerRowLinks = async (row) => {
+    let projects = [...this.state.projects];
+
+    const [hlg_result, prd_result] = await Promise.all([
+      this.getLinkStatus(row, 'hlg'),
+      this.getLinkStatus(row, 'prd'),
+    ]);
+
+    // console.log(hlg_result, prd_result)
+
+    projects[row]['status'] = this.compareResults(hlg_result, prd_result);
+    projects = this.updateText(row, 'hlg', hlg_result.text, projects);
+    projects = this.updateText(row, 'prd', prd_result.text, projects);
+
+    this.setState({ projects });
+  }
+
+  updateText = (row, column, text, projects) => {
+    projects[row][column]['text'] = text;
+    return projects;
+  }
+
+  compareResults = (a, b) => {
+    if (a.error || b.error) {
+      return 'offline';
+    }
+    if (a.text === b.text) {
+      return 'online';
+    }
+    return 'differ';
+  }
+
+  updateRow(row, column, result) {
+    const projects = [...this.state.projects];
+    
+    console.log(row, column, projects, result);
+    projects[row][column]['text'] = result.text;
+
+    const hlg = projects[row]['hlg']['text'];
+    const prd = projects[row]['prd']['text'];
+
+    let status = 'differ';
+
+    if (hlg === prd) {
+      status = 'online';
+    }
+    if (result.error) {
+      status = 'offline';
+    }
+
+    projects[row]['status'] = status;
+    this.setState({ projects });
+  }
+
+  renderLink(cellInfo) {
+    const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
     return (
-      <a 
-        href="#" 
-        onClick={async (e) => {
-          e && e.preventDefault();
-
-          const projects = [...this.state.projects];
-          const cell = projects[cellInfo.index][cellInfo.column.id];
-
-          const result = await this.getLinkStatus(cell.status);
-
-          projects[cellInfo.index][cellInfo.column.id]['text'] = result.text;
-          
-          const hlg = projects[cellInfo.index]['hlg']['text'];
-          const prd = projects[cellInfo.index]['prd']['text'];
-
-          let status = 'differ';
-
-          if (result.error) {
-            status = 'offline';
-          } else if (hlg === prd) {
-            status = 'online';
-          }
-
-          projects[cellInfo.index]['status'] = status;
-          this.setState({ projects });
-        }}  
-        target="_blank">
-        { cellInfo.value }
-      </a>
-    );
+      <Link
+        // onClick={() => {
+        //   this.triggerLink(cellInfo.index, cellInfo.column.id, 'prd')
+        // }}
+        updateRow={this.updateRow}
+        row={cellInfo.index}
+        column={cellInfo.column.id} 
+        href={cell.status}>
+        {cellInfo.value}
+      </Link>
+    )
   }
 
-  getLinkStatus(url) {
-    return fetch(url)
+  getLinkStatus(row, column) {
+    const projects = [...this.state.projects];
+    const cell = projects[row][column];
+    cell.text = 'Loading...';
+    
+    this.setState({ projects });
+
+    return fetch(cell.status)
     .then((r) => {
       if (!r.ok) {
           throw Error(`${r.status} - ${r.statusText}`);
@@ -116,8 +165,6 @@ class Table extends React.Component {
     });
   }
 
-
-
   render() {
     return (
         <div>
@@ -141,53 +188,32 @@ class Table extends React.Component {
           return row[id] !== undefined ? String(row[id]).toUpperCase().indexOf(filter.value.toUpperCase()) > -1 : true
         }}
         getTrProps={(state, rowInfo, column) => {
-          // console.log('rowState', state)
-          console.log('rowInfo', rowInfo)
-
           let className = '';
-
           if (rowInfo && rowInfo.original && rowInfo.original.status) {
             return {
               className: `row-${rowInfo.original.status}`
             }
           }
-
           return { className };
         }}
-        getTdProps={(state, rowInfo, column, instance) => {
-          if (rowInfo) {
-            console.log('A Td state ', state)
-            console.log('It was in this column:', column)
-          }
-          return {
-            // onClick: (e, handleOriginal) => {
-            //   console.log('A Td Element was clicked!')
-            //   console.log('it produced this event:', e)
-            //   console.log('It was in this column:', column)
-            //   console.log('It was in this row:', rowInfo)
-            //   console.log('It was in this table instance:', instance)
-      
-            //   // IMPORTANT! React-Table uses onClick internally to trigger
-            //   // events like expanding SubComponents and pivots.
-            //   // By default a custom 'onClick' handler will override this functionality.
-            //   // If you want to fire the original onClick handler, call the
-            //   // 'handleOriginal' function.
-            //   if (handleOriginal) {
-            //     handleOriginal()
-            //   }
-            // }
-          }
-        }}
-        resolveData={data => data.map(row => row)}
+        // resolveData={data => data.map(row => row)}
         columns={[
           {
             Header: 'Name',
             accessor: 'name', // String-based value accessors!
             width: 150,
           }, {
-            Header: () => <button>Call</button>,
+            // Header: () => <button>Call</button>,
             width: 50,
-            Cell: props => <button>call</button>
+            Cell: cellInfo => {
+              return (
+                <button onClick={() => {
+                  this.triggerRowLinks(cellInfo.index);
+                }}>
+                  call
+                </button>
+              )
+            }
           }, {
             Header: 'Result',
             accessor: 'result',
@@ -197,32 +223,13 @@ class Table extends React.Component {
             Header: 'HLG',
             // accessor: 'hlg.text',
             accessor: d => (d.hlg.text || d.hlg.status), // Custom value accessors!
-            Cell: this.renderEditable
-            // Cell: (row) => {
-            //   const updateRow = () => {
-            //     // row.classList.remove('row-online', 'row-offline', 'row-differ')
-            //     // row.classList.add('row-online');
-            //     console.log('row', row);
-            //     // row.classes.add('row-online');
-
-            //     // row.classes[0] = 'row-online'
-            //     // row.classes[1] = 'row-online'
-            //     // row.classes[2] = 'row-online'
-            //     console.log('...', row.state);
-            //     console.log(row.classes);
-            //     const state = this.state
-            //     this.setState(state)
-            //   }
-            //   return (<Link updateRow={updateRow} href={row.value}>{row.value}</Link>)
-            // }
+            Cell: this.renderLink
           }, {
             id: 'prd', // Required because our accessor is not a string
             Header: 'PRD',
             // accessor: 'prd.text',
             accessor: d => (d.prd.text || d.prd.status), // Custom value accessors!
-            // accessor: d => d.hlg.status // Custom value accessors!
-            // Cell: props => <Link href={props.value}>{props.value}</Link>
-            Cell: this.renderEditable
+            Cell: this.renderLink
 
           }
         ]}

@@ -4,57 +4,46 @@ class Link extends Component {
 
   constructor(props) {
     super(props);
-    console.log('link props', props)
+    // console.log('link props', props)
     this.state = { error: false, loading: false, text: '' };
     this.onClick = this.onClick.bind(this);
   }
 
-  onClick(e) {
+  async onClick(e) {
     e && e.preventDefault();
 
-    // console.log(this.props)
     this.setState({loading: true});
 
-    fetch(this.props.href)
+    const result = await fetch(this.props.href)
     .then((r) => {
         if (!r.ok) {
             throw Error(`${r.status} - ${r.statusText}`);
         }
         return r.json();
     })
-    .then((d) => {
-        this.setState({
-          text: this.parse(d),
-          error: false
-        });
-        // console.log('success', this.state,  this.parse(d));
+    .then((body) => {
+      const result = {
+        text: this.parse(body),
+        error: false
+      };
+      return result;
     })
     .catch((e) => {
-        let err_str = e.toString()
-        if (e instanceof TypeError) {
-            err_str = "Cors Disabled";
-        }
-        console.error("Nonon", e);
-        // this.innerText = err_str;
-        this.setState({
-          text: err_str,
-          error: true
-        });
-
-        // setError(true);
+      let err_str = e.toString()
+      if (e instanceof TypeError) {
+          err_str = "Cors Disabled";
+      }
+      console.error("Nonon", e);
+      const result = {
+        text: err_str,
+        error: true
+      };
+      return result;
     })
     .finally(() => {
       this.setState({loading: false})
-      // console.log(this.state);
-      this.props.checkStatus();
-//         const row = getParentRow(this);
-// //            const elementToCompare = document.querySelector("#"+this.getAttribute('data-compare-to')+'');
-//         const hrefCompareTo = this.getAttribute('data-compare-to')
-//         const elementToCompare = this.closest('tr').querySelector(`a[href="${hrefCompareTo}"]`);
-//         differ = compareResults(this, elementToCompare);
-//         setClass(row, differ);
-//         setResult(row, differ);
     });
+    this.props.updateRow(this.props.row, this.props.column, result);
   }
 
   parse(body) {
@@ -70,7 +59,7 @@ class Link extends Component {
     }
 
     return (
-      <a href={ href } onClick={this.onClick} target="_blank">
+      <a href={ href } onClick={this.onClick} rel="noopener noreferrer" target="_blank">
         { text }
       </a>
     );
