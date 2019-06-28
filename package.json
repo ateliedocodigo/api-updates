@@ -2,6 +2,7 @@
   "name": "api-updates",
   "version": "0.1.0",
   "private": true,
+  "homepage":"https://ateliedocodigo.github.io/api-updates",
   "dependencies": {
     "history": "^4.9.0",
     "react": "^16.8.6",
