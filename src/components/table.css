@@ -1,10 +1,17 @@
-.ReactTable {
+body {
+    color: white;
+}
+  
+a {
+color: white;
+}
+  /* .ReactTable {
     color: white;
 }
 
 .ReactTable a {
     color: white;
-}
+} */
 
 .rt-thead {
     font-weight: bold;
@@ -38,4 +45,40 @@
 
 .rt-tr-group {
 
+}
+
+/*  */
+.spliced {
+    display: inline-block;
+    width: calc(50% - 20px); /* -10px padding */
+    padding: 10px;
+}
+
+.spliced label {
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.spliced input, button {
+    border: 1px solid rgba(0,0,0,0.1);
+    background: #fff;
+    padding: 5px 7px;
+    font-size: 0.9em;
+    border-radius: 3px;
+    font-weight: normal;
+    outline: none;
+    margin-right: 10px;
+}
+
+.spliced input {
+    width: 300px;
+    /* -webkit-transition: width .35s ease-in-out; */
+    /* transition: width .35s ease-in-out; */
+}
+.spliced input:focus {
+    /* width: 65%; */
+}
+
+.spliced button {
+    background: #999;
 }

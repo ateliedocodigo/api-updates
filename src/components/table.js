@@ -3,20 +3,41 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import './table.css';
 
+import { createBrowserHistory } from 'history';
+
 class Table extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { data: [], projects: [], config_url: 'http://demo5025930.mockable.io/snippet', loading: false };
-    // this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.renderLink = this.renderLink.bind(this);
+    const urlParams = new URLSearchParams(window.location.search);
+    const default_config_url = 'http://demo5025930.mockable.io/snippet';
+    let config_url = default_config_url;
+    if (urlParams.has('config')) {
+        config_url = urlParams.get('config')
+    }
+    // console.log(urlParams.get('config'), config_url)
+    this.state = { data: [], projects: [], config_url, loading: false, default_config_url };
   }
 
-  handleSubmit(e) {
+  history = createBrowserHistory();
+
+  pushHistory = () =>{
+    const urlParams = new URLSearchParams(window.location.search);
+    if (this.state.config_url === urlParams.get('config')) {
+      return;
+    }
+    urlParams.set('config', this.state.config_url);
+    this.history.push(`?${urlParams.toString()}`);
+    // console.log(urlParams.toString());
+  }
+
+  handleSubmit = (e) => {
     e && e.preventDefault();
+    
     if (!this.state.config_url.length) {
       return;
     }
+
+    this.pushHistory();
 
     this.setState({loading: true});
 
@@ -30,7 +51,7 @@ class Table extends React.Component {
     .then((d) => {
         // console.log(d['projects']);
         this.setState({
-            projects: d['projects'].map(project => ({ ...project, status: '' }))
+          projects: d['projects']
         });
         // console.log(this.state.projects);
     })
@@ -40,6 +61,7 @@ class Table extends React.Component {
           err_str = "Cors Disabled";
         }
         console.error("Nonon", err_str, e);
+        this.setState({projects: []})
     })
     .finally(() => {
         this.setState({loading: false});
@@ -52,7 +74,7 @@ class Table extends React.Component {
     const result = await this.getLinkStatus(row, column);
 
     projects = this.updateText(row, column, result.text, projects);
-    projects[row].status = result.error ? 0 : this.compareResults(projects[row].hlg, projects[row].prd);
+    projects[row].result = result.error ? 0 : this.compareResults(projects[row].hlg, projects[row].prd);
     this.setState({ projects });
   }
 
@@ -67,7 +89,7 @@ class Table extends React.Component {
     // console.log(hlg_result, prd_result)
     projects = this.updateText(row, 'hlg', hlg_result.text, projects);
     projects = this.updateText(row, 'prd', prd_result.text, projects);
-    projects[row]['status'] = (hlg_result.error || prd_result.error) ? 0 : this.compareResults(hlg_result, prd_result);
+    projects[row].result = (hlg_result.error || prd_result.error) ? 0 : this.compareResults(hlg_result, prd_result);
     // console.log(hlg_result, prd_result, projects[row]['status']);
     this.setState({ projects });
   }
@@ -84,7 +106,7 @@ class Table extends React.Component {
     return 1;
   }
 
-  renderLink(cellInfo) {
+  renderLink = (cellInfo) => {
     const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
     return (
       <a 
@@ -137,17 +159,30 @@ class Table extends React.Component {
   render() {
     return (
         <div>
-      <form onSubmit={this.handleSubmit}>
-        <input
-          readOnly
-          id="config-url"
-        //   onChange={this.handleChange}
-          value={this.state.config_url}
-        />
-        <button>
-          Load
-        </button>
-      </form>
+          <div>
+            <div className="spliced">
+              <form onSubmit={this.handleSubmit} method="GET">
+                <label rel="config">Configuration url:</label>
+                <input
+                  onChange={(event) => this.setState({config_url: event.target.value})}
+                  // readOnly
+                  id="config-url"
+                //   onChange={this.handleChange}
+                  name="config"
+                  value={this.state.config_url}
+                />
+                <button type="submit">
+                  Load
+                </button>
+              </form>
+            </div>
+            <div className="spliced">
+            <label rel="config">Example:</label> 
+            <a href={this.state.default_config_url} rel="noopener noreferrer" target="_blank">{this.state.default_config_url}</a>
+            </div>
+          </div>
+
+
 
       <ReactTable
         data={this.state.projects}
@@ -158,16 +193,16 @@ class Table extends React.Component {
         }}
         getTrProps={(state, rowInfo, column) => {
           let className = '';
-          if (rowInfo && rowInfo.original && rowInfo.original.status !== undefined) {
-            switch(rowInfo.original.status) {
+          if (rowInfo && rowInfo.original && rowInfo.original.result !== undefined) {
+            switch(rowInfo.original.result) {
               case 0:
-                  className='row-offline';
+                  className = 'row-offline';
                   break;
                 case 1:
-                    className='row-differ';
+                    className = 'row-differ';
                     break;
                 case 2:
-                    className='row-online';
+                    className = 'row-online';
                     break;
                 default:
             }
