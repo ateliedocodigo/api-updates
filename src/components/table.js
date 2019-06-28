@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
-import Link from './link';
 import './table.css';
-import { async } from 'q';
 
 class Table extends React.Component {
   constructor(props) {
@@ -11,10 +9,7 @@ class Table extends React.Component {
     this.state = { data: [], projects: [], config_url: 'http://demo5025930.mockable.io/snippet', loading: false };
     // this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.updateRow = this.updateRow.bind(this);
     this.renderLink = this.renderLink.bind(this);
-    // this.triggerRowLinks = this.triggerRowLinks.bind(this);
-    
   }
 
   handleSubmit(e) {
@@ -51,13 +46,13 @@ class Table extends React.Component {
     });
   }
 
-  triggerLink = async (row, column, compare_to) => {
+  triggerLink = async (row, column) => {
     let projects = [...this.state.projects];
 
     const result = await this.getLinkStatus(row, column);
 
-    projects[row]['status'] = this.compareResults(result, {error:projects[row]['status']=='offline'});
     projects = this.updateText(row, column, result.text, projects);
+    projects[row].status = result.error ? 0 : this.compareResults(projects[row].hlg, projects[row].prd);
     this.setState({ projects });
   }
 
@@ -70,11 +65,10 @@ class Table extends React.Component {
     ]);
 
     // console.log(hlg_result, prd_result)
-
-    projects[row]['status'] = this.compareResults(hlg_result, prd_result);
     projects = this.updateText(row, 'hlg', hlg_result.text, projects);
     projects = this.updateText(row, 'prd', prd_result.text, projects);
-
+    projects[row]['status'] = (hlg_result.error || prd_result.error) ? 0 : this.compareResults(hlg_result, prd_result);
+    // console.log(hlg_result, prd_result, projects[row]['status']);
     this.setState({ projects });
   }
 
@@ -84,50 +78,25 @@ class Table extends React.Component {
   }
 
   compareResults = (a, b) => {
-    if (a.error || b.error) {
-      return 'offline';
-    }
     if (a.text === b.text) {
-      return 'online';
+      return 2;
     }
-    return 'differ';
-  }
-
-  updateRow(row, column, result) {
-    const projects = [...this.state.projects];
-    
-    console.log(row, column, projects, result);
-    projects[row][column]['text'] = result.text;
-
-    const hlg = projects[row]['hlg']['text'];
-    const prd = projects[row]['prd']['text'];
-
-    let status = 'differ';
-
-    if (hlg === prd) {
-      status = 'online';
-    }
-    if (result.error) {
-      status = 'offline';
-    }
-
-    projects[row]['status'] = status;
-    this.setState({ projects });
+    return 1;
   }
 
   renderLink(cellInfo) {
     const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
     return (
-      <Link
-        // onClick={() => {
-        //   this.triggerLink(cellInfo.index, cellInfo.column.id, 'prd')
-        // }}
-        updateRow={this.updateRow}
-        row={cellInfo.index}
-        column={cellInfo.column.id} 
-        href={cell.status}>
-        {cellInfo.value}
-      </Link>
+      <a 
+        onClick={(e) => {
+          e.preventDefault();
+          this.triggerLink(cellInfo.index, cellInfo.column.id, 'prd')
+        }}
+        href={ cell.status } 
+        rel="noopener noreferrer" 
+        target="_blank">
+        { cellInfo.value }
+      </a>
     )
   }
 
@@ -189,9 +158,18 @@ class Table extends React.Component {
         }}
         getTrProps={(state, rowInfo, column) => {
           let className = '';
-          if (rowInfo && rowInfo.original && rowInfo.original.status) {
-            return {
-              className: `row-${rowInfo.original.status}`
+          if (rowInfo && rowInfo.original && rowInfo.original.status !== undefined) {
+            switch(rowInfo.original.status) {
+              case 0:
+                  className='row-offline';
+                  break;
+                case 1:
+                    className='row-differ';
+                    break;
+                case 2:
+                    className='row-online';
+                    break;
+                default:
             }
           }
           return { className };
