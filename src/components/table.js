@@ -32,7 +32,7 @@ class Table extends React.Component {
 
   handleSubmit = (e) => {
     e && e.preventDefault();
-    
+
     if (!this.state.config_url.length) {
       return;
     }
@@ -74,23 +74,23 @@ class Table extends React.Component {
     const result = await this.getLinkStatus(row, column);
 
     projects = this.updateText(row, column, result.text, projects);
-    projects[row].result = result.error ? 0 : this.compareResults(projects[row].hlg, projects[row].prd);
+    projects[row].result = result.error ? 0 : this.compareResults(projects[row].staging, projects[row].production);
     this.setState({ projects });
   }
 
   triggerRowLinks = async (row) => {
     let projects = [...this.state.projects];
 
-    const [hlg_result, prd_result] = await Promise.all([
-      this.getLinkStatus(row, 'hlg'),
-      this.getLinkStatus(row, 'prd'),
+    const [stg_result, prd_result] = await Promise.all([
+      this.getLinkStatus(row, 'staging'),
+      this.getLinkStatus(row, 'production'),
     ]);
 
-    // console.log(hlg_result, prd_result)
-    projects = this.updateText(row, 'hlg', hlg_result.text, projects);
-    projects = this.updateText(row, 'prd', prd_result.text, projects);
-    projects[row].result = (hlg_result.error || prd_result.error) ? 0 : this.compareResults(hlg_result, prd_result);
-    // console.log(hlg_result, prd_result, projects[row]['status']);
+    // console.log(stg_result, prd_result)
+    projects = this.updateText(row, 'staging', stg_result.text, projects);
+    projects = this.updateText(row, 'production', prd_result.text, projects);
+    projects[row].result = (stg_result.error || prd_result.error) ? 0 : this.compareResults(stg_result, prd_result);
+    // console.log(stg_result, prd_result, projects[row]['status']);
     this.setState({ projects });
   }
 
@@ -109,13 +109,13 @@ class Table extends React.Component {
   renderLink = (cellInfo) => {
     const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
     return (
-      <a 
+      <a
         onClick={(e) => {
           e.preventDefault();
-          this.triggerLink(cellInfo.index, cellInfo.column.id, 'prd')
+          this.triggerLink(cellInfo.index, cellInfo.column.id)
         }}
-        href={ cell.status } 
-        rel="noopener noreferrer" 
+        href={ cell.url }
+        rel="noopener noreferrer"
         target="_blank">
         { cellInfo.value }
       </a>
@@ -126,10 +126,10 @@ class Table extends React.Component {
     const projects = [...this.state.projects];
     const cell = projects[row][column];
     cell.text = 'Loading...';
-    
+
     this.setState({ projects });
 
-    return fetch(cell.status)
+    return fetch(cell.url)
     .then((r) => {
       if (!r.ok) {
           throw Error(`${r.status} - ${r.statusText}`);
@@ -144,11 +144,11 @@ class Table extends React.Component {
     })
     .catch((e) => {
         let err_str = e.toString()
-        
+
         if (e instanceof TypeError) {
             err_str = "Cors Disabled";
         }
-        
+
         return {
           text: err_str,
           error: true
@@ -165,9 +165,7 @@ class Table extends React.Component {
                 <label rel="config">Configuration url:</label>
                 <input
                   onChange={(event) => this.setState({config_url: event.target.value})}
-                  // readOnly
                   id="config-url"
-                //   onChange={this.handleChange}
                   name="config"
                   value={this.state.config_url}
                 />
@@ -177,13 +175,10 @@ class Table extends React.Component {
               </form>
             </div>
             <div className="spliced">
-            <label rel="config">Example:</label> 
+            <label rel="config">Example:</label>
             <a href={this.state.default_config_url} rel="noopener noreferrer" target="_blank">{this.state.default_config_url}</a>
             </div>
           </div>
-
-
-
       <ReactTable
         data={this.state.projects}
         loading={this.state.loading}
@@ -213,7 +208,7 @@ class Table extends React.Component {
         columns={[
           {
             Header: 'Name',
-            accessor: 'name', // String-based value accessors!
+            accessor: 'name',
             width: 150,
           }, {
             // Header: () => <button>Call</button>,
@@ -232,16 +227,14 @@ class Table extends React.Component {
             accessor: 'result',
             width: 66,
           }, {
-            id: 'hlg', // Required because our accessor is not a string
-            Header: 'HLG',
-            // accessor: 'hlg.text',
-            accessor: d => (d.hlg.text || d.hlg.status), // Custom value accessors!
+            id: 'staging',
+            Header: 'Staging',
+            accessor: d => (d.staging.text || d.staging.url),
             Cell: this.renderLink
           }, {
-            id: 'prd', // Required because our accessor is not a string
-            Header: 'PRD',
-            // accessor: 'prd.text',
-            accessor: d => (d.prd.text || d.prd.status), // Custom value accessors!
+            id: 'production',
+            Header: 'Production',
+            accessor: d => (d.production.text || d.production.url),
             Cell: this.renderLink
 
           }
