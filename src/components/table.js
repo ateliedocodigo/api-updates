@@ -209,9 +209,9 @@ class Table extends React.Component {
           {
             Header: 'Name',
             accessor: 'name',
-            width: 150,
+            width: 200
           }, {
-            // Header: () => <button>Call</button>,
+            Header: () => <button>call</button>,
             width: 50,
             Cell: cellInfo => {
               return (
@@ -221,6 +221,13 @@ class Table extends React.Component {
                   call
                 </button>
               )
+            },
+            getHeaderProps: (state, rowInfo, column, instance) => {
+              return {
+                onClick: (e) => {
+                  [...this.state.projects].map((el, i) => this.triggerRowLinks(i));
+                },
+              }
             }
           }, {
             Header: 'Result',
@@ -240,7 +247,10 @@ class Table extends React.Component {
           }
         ]}
         filterable={true}
-        showPagination={false}
+        minRows={5}
+        // showPagination={false}
+        defaultPageSize={50}
+        pageSize={150}
         onFetchData={(state, instance) => {
             if (this.state.projects.length > 0) {
                 return
