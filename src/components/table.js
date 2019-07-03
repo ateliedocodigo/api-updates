@@ -80,6 +80,9 @@ class Table extends React.Component {
 
   triggerRowLinks = async (row) => {
     let projects = [...this.state.projects];
+    if (projects[row].disabled) {
+      return;
+    }
 
     const [stg_result, prd_result] = await Promise.all([
       this.getLinkStatus(row, 'staging'),
@@ -204,16 +207,40 @@ class Table extends React.Component {
           }
           return { className };
         }}
+        getTdProps={_ => {
+          return { style: { lineHeight: "1.7em" } };
+        }}
         // resolveData={data => data.map(row => row)}
         columns={[
           {
             Header: 'Name',
             accessor: 'name',
-            width: 200
+            width: 200,
+            Cell: cellInfo => {
+              if (cellInfo.original && cellInfo.original.disabled) {
+                return (
+                  <del>
+                  {cellInfo.value}
+                  </del>
+                )
+              }
+              return cellInfo.value;
+            },
           }, {
-            Header: () => <button>call</button>,
+            Header: () => {
+              return (
+                <button onClick={(e) => {
+                    [...this.state.projects].map((el, i) => this.triggerRowLinks(i));
+                  }}>
+                  call
+                </button>
+              );
+            },
             width: 50,
             Cell: cellInfo => {
+              if (cellInfo.original && cellInfo.original.disabled) {
+                return (<span></span>);
+              }
               return (
                 <button onClick={() => {
                   this.triggerRowLinks(cellInfo.index);
@@ -222,13 +249,6 @@ class Table extends React.Component {
                 </button>
               )
             },
-            getHeaderProps: (state, rowInfo, column, instance) => {
-              return {
-                onClick: (e) => {
-                  [...this.state.projects].map((el, i) => this.triggerRowLinks(i));
-                },
-              }
-            }
           }, {
             Header: 'Result',
             accessor: 'result',
