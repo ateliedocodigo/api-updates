@@ -9,7 +9,7 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
     const urlParams = new URLSearchParams(window.location.search);
-    const default_config_url = 'https://demo5025930.mockable.io/snippet';
+    const default_config_url = 'default.json';
     let config_url = default_config_url;
     if (urlParams.has('config')) {
         config_url = urlParams.get('config')
