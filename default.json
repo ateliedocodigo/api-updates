@@ -1,0 +1,50 @@
+{
+  "projects": [
+    {
+      "name": "service-ok",
+      "staging": {
+        "url": "https://demo5025930.mockable.io/status1"
+      },
+      "production": {
+        "url": "https://demo5025930.mockable.io/status1"
+      }
+    },
+    {
+      "name": "service-diff",
+      "staging": {
+        "url": "https://demo5025930.mockable.io/status1"
+      },
+      "production": {
+        "url": "https://demo5025930.mockable.io/status2"
+      }
+    },
+    {
+      "name": "disabled",
+      "disabled": true,
+      "staging": {
+        "url": "https://demo5025930.mockable.io/status2"
+      },
+      "production": {
+        "url": "https://demo5025930.mockable.io/status2"
+      }
+    },
+    {
+      "name": "localhost-8080",
+      "staging": {
+        "url": "http://localhost:8080/status"
+      },
+      "production": {
+        "url": "http://localhost:8080/status"
+      }
+    },
+    {
+      "name": "localhost-8080",
+      "staging": {
+        "url": "http://localhost:8080/api/info"
+      },
+      "production": {
+        "url": "http://localhost:8080/info"
+      }
+    }
+  ]
+}
