@@ -7,8 +7,11 @@ Inspired on `swagger`, it uses a configuration url, that loads the services tabl
 ![Default Table Loaded](https://github.com/ateliedocodigo/api-updates/raw/master/public/table-default.png "Default Table Loaded")
 
 Each line is an api, with a name, staging url and production url.
+
 By clicking on service link, it will fill the current cell with service content.
+
 The `call` button will call both current row services.
+
 The `call` button on header, will call all services.
 
 After each call, result column will be filled with the comparision of staging and producion satus.
