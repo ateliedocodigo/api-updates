@@ -1,84 +1,73 @@
 body {
-    color: white;
-}
-  
-a {
-color: white;
-}
-  /* .ReactTable {
-    color: white;
+  color: white;
 }
 
-.ReactTable a {
-    color: white;
-} */
+a {
+  color: white;
+}
 
 .rt-thead {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .row-offline,
 .row-offline a {
-    background: #a00000;
-    color: #f7cece;
-    text-decoration: none;
+  background: #a00000;
+  color: #f7cece;
+  text-decoration: none;
 }
 
 .row-online,
 .row-online a {
-    background: #53a000 !important;
-    color: #d8f7ce;
-    text-decoration: none;
+  background: #53a000;
+  color: #d8f7ce;
+  text-decoration: none;
 }
 
 .row-differ,
 .row-differ a {
-    background: #FFC859 !important;
-    color: #734d00;
-    text-decoration: none;
+  background: #FFC859;
+  color: #734d00;
+  text-decoration: none;
 }
 
 .rt-tr:hover {
-    background: #666666;
-    opacity: 0.5;
-}
-
-.rt-tr-group {
-
+  background: #666666;
+  opacity: 0.5;
 }
 
 /*  */
 .spliced {
-    display: inline-block;
-    width: calc(50% - 20px); /* -10px padding */
-    padding: 10px;
+  display: inline-block;
+  width: calc(50% - 20px); /* -10px padding */
+  padding: 10px;
 }
 
 .spliced label {
-    font-size: 1.2em;
-    margin-right: 10px;
+  font-size: 1.2em;
+  margin-right: 10px;
 }
 
 .spliced input, button {
-    border: 1px solid rgba(0,0,0,0.1);
-    background: #fff;
-    padding: 5px 7px;
-    font-size: 0.9em;
-    border-radius: 3px;
-    font-weight: normal;
-    outline: none;
-    margin-right: 10px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #fff;
+  padding: 5px 7px;
+  font-size: 0.9em;
+  border-radius: 3px;
+  font-weight: normal;
+  outline: none;
+  margin-right: 10px;
 }
 
 .spliced input {
-    width: 300px;
-    /* -webkit-transition: width .35s ease-in-out; */
-    /* transition: width .35s ease-in-out; */
+  width: 300px;
+  /* -webkit-transition: width .35s ease-in-out; */
+  /* transition: width .35s ease-in-out; */
 }
 .spliced input:focus {
-    /* width: 65%; */
+  /* width: 65%; */
 }
 
 .spliced button {
-    background: #999;
+  background: #999;
 }
