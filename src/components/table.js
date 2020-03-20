@@ -74,7 +74,12 @@ class Table extends React.Component {
     const result = await this.getLinkStatus(row, column);
 
     projects = this.updateText(row, column, result.text, projects);
-    projects[row].result = result.error ? 0 : this.compareResults(projects[row].staging, projects[row].production);
+    projects[row].result = 0;
+    if (!result.error) {
+      const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
+      projects[row].result = is_equal ? 2 : 1;
+    }
+    // projects[row].result = result.error ? 0 : this.compareResults(projects[row].staging, projects[row].production);
     this.setState({ projects });
   }
 
@@ -102,11 +107,11 @@ class Table extends React.Component {
     return projects;
   }
 
-  compareResults = (a, b) => {
-    if (a.text === b.text) {
-      return 2;
-    }
-    return 1;
+  compareResults = (a, b, c) => {
+    const a_b = (a && b) ? (a.text === b.text) : true;
+    const a_c = (a && c) ? (a.text === c.text) : true;
+    const b_c = (b && c) ? (b.text === c.text) : true;
+    return a_b && a_c && b_c;
   }
 
   renderLink = (cellInfo) => {

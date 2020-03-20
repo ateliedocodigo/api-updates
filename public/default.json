@@ -2,6 +2,15 @@
   "projects": [
     {
       "name": "service-ok",
+      "staging": {
+        "url": "https://demo5025930.mockable.io/status1?stg"
+      },
+      "production": {
+        "url": "https://demo5025930.mockable.io/status1?prd"
+      }
+    },
+    {
+      "name": "service-ok with dev",
       "development": {
         "url": "https://demo5025930.mockable.io/status1?dev"
       },
@@ -22,8 +31,23 @@
       }
     },
     {
+      "name": "service-diff wirh dev",
+      "development": {
+        "url": "https://demo5025930.mockable.io/status1?dev"
+      },
+      "staging": {
+        "url": "https://demo5025930.mockable.io/status1"
+      },
+      "production": {
+        "url": "https://demo5025930.mockable.io/status2"
+      }
+    },
+    {
       "name": "disabled",
       "disabled": true,
+      "development": {
+        "url": "http://localhost:8080/status"
+      },
       "staging": {
         "url": "https://demo5025930.mockable.io/status2"
       },
