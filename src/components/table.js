@@ -110,14 +110,14 @@ class Table extends React.Component {
   }
 
   renderLink = (cellInfo) => {
-    const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
+    const cell = this.state.projects[cellInfo.index][cellInfo.column.id] || {};
     return (
       <a
         onClick={(e) => {
           e.preventDefault();
           this.triggerLink(cellInfo.index, cellInfo.column.id)
         }}
-        href={ cell.url }
+        href={ cell.url || "" }
         rel="noopener noreferrer"
         target="_blank">
         { cellInfo.value }
@@ -253,6 +253,11 @@ class Table extends React.Component {
             Header: 'Result',
             accessor: 'result',
             width: 66,
+          }, {
+            id: 'development',
+            Header: 'Development',
+            accessor: d => (d.development && (d.development.text || d.development.url)),
+            Cell: this.renderLink
           }, {
             id: 'staging',
             Header: 'Staging',

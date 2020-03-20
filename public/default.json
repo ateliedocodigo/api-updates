@@ -2,11 +2,14 @@
   "projects": [
     {
       "name": "service-ok",
+      "development": {
+        "url": "https://demo5025930.mockable.io/status1?dev"
+      },
       "staging": {
-        "url": "https://demo5025930.mockable.io/status1"
+        "url": "https://demo5025930.mockable.io/status1?stg"
       },
       "production": {
-        "url": "https://demo5025930.mockable.io/status1"
+        "url": "https://demo5025930.mockable.io/status1?prd"
       }
     },
     {
