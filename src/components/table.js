@@ -73,9 +73,11 @@ class Table extends React.Component {
 
     const result = await this.getLinkStatus(row, column);
 
-    projects = this.updateText(row, column, result.text, projects);
+    projects = this.updateResult(row, column, result, projects);
     projects[row].result = 0;
-    if (!result.error) {
+    projects[row][column].error = result.error;
+    console.log('Error?', result.error);
+    if (!this.hasError(projects[row].development, projects[row].staging, projects[row].production)) {
       const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
       projects[row].result = is_equal ? 2 : 1;
     }
@@ -89,22 +91,36 @@ class Table extends React.Component {
       return;
     }
 
-    const [stg_result, prd_result] = await Promise.all([
+    const [dev_result, stg_result, prd_result] = await Promise.all([
+      this.getLinkStatus(row, 'development'),
       this.getLinkStatus(row, 'staging'),
       this.getLinkStatus(row, 'production'),
     ]);
 
     // console.log(stg_result, prd_result)
-    projects = this.updateText(row, 'staging', stg_result.text, projects);
-    projects = this.updateText(row, 'production', prd_result.text, projects);
-    projects[row].result = (stg_result.error || prd_result.error) ? 0 : this.compareResults(stg_result, prd_result);
-    // console.log(stg_result, prd_result, projects[row]['status']);
+    projects = this.updateResult(row, 'development', dev_result, projects);
+    projects = this.updateResult(row, 'staging', stg_result, projects);
+    projects = this.updateResult(row, 'production', prd_result, projects);
+
+    projects[row].result = 0;
+    if (!this.hasError(projects[row].development, projects[row].staging, projects[row].production)) {
+      const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
+      projects[row].result = is_equal ? 2 : 1;
+    }
     this.setState({ projects });
   }
 
-  updateText = (row, column, text, projects) => {
-    projects[row][column]['text'] = text;
+  updateResult = (row, column, result, projects) => {
+    if (!projects[row][column]) {
+      return projects;
+    }
+    projects[row][column]['error'] = result.error;
+    projects[row][column]['text'] = result.text;
     return projects;
+  }
+
+  hasError = (a, b, c) => {
+    return (a && a.error) || (b && b.error) || (c && c.error);
   }
 
   compareResults = (a, b, c) => {
@@ -133,6 +149,9 @@ class Table extends React.Component {
   getLinkStatus(row, column) {
     const projects = [...this.state.projects];
     const cell = projects[row][column];
+    if (!cell || !cell.url) {
+      return new Promise((resolve, _) => resolve({ text: '', error: false }));
+    }
     cell.text = 'Loading...';
 
     this.setState({ projects });
