@@ -81,7 +81,6 @@ class Table extends React.Component {
       const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
       projects[row].result = is_equal ? 2 : 1;
     }
-    // projects[row].result = result.error ? 0 : this.compareResults(projects[row].staging, projects[row].production);
     this.setState({ projects });
   }
 
