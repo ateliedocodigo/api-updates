@@ -9,7 +9,7 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
     const urlParams = new URLSearchParams(window.location.search);
-    const default_config_url = 'default.json';
+    const default_config_url = process.env.REACT_APP_DEFAULT_CONFIG;
     let config_url = default_config_url;
     if (urlParams.has('config')) {
         config_url = urlParams.get('config')
