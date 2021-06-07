@@ -5,9 +5,9 @@
   "homepage": "https://ateliedocodigo.github.io/api-updates",
   "dependencies": {
     "history": "^4.10.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-scripts": "^3.4.1",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-scripts": "^3.4.4",
     "react-table": "^6.11.5"
   },
   "scripts": {
