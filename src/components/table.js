@@ -9,7 +9,7 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
     const urlParams = new URLSearchParams(window.location.search);
-    const default_config_url = 'default.json';
+    const default_config_url = process.env.REACT_APP_DEFAULT_CONFIG;
     let config_url = default_config_url;
     if (urlParams.has('config')) {
         config_url = urlParams.get('config')
@@ -73,8 +73,14 @@ class Table extends React.Component {
 
     const result = await this.getLinkStatus(row, column);
 
-    projects = this.updateText(row, column, result.text, projects);
-    projects[row].result = result.error ? 0 : this.compareResults(projects[row].staging, projects[row].production);
+    projects = this.updateResult(row, column, result, projects);
+    projects[row].result = 0;
+    projects[row][column].error = result.error;
+    console.log('Error?', result.error);
+    if (!this.hasError(projects[row].development, projects[row].staging, projects[row].production)) {
+      const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
+      projects[row].result = is_equal ? 2 : 1;
+    }
     this.setState({ projects });
   }
 
@@ -84,40 +90,54 @@ class Table extends React.Component {
       return;
     }
 
-    const [stg_result, prd_result] = await Promise.all([
+    const [dev_result, stg_result, prd_result] = await Promise.all([
+      this.getLinkStatus(row, 'development'),
       this.getLinkStatus(row, 'staging'),
       this.getLinkStatus(row, 'production'),
     ]);
 
     // console.log(stg_result, prd_result)
-    projects = this.updateText(row, 'staging', stg_result.text, projects);
-    projects = this.updateText(row, 'production', prd_result.text, projects);
-    projects[row].result = (stg_result.error || prd_result.error) ? 0 : this.compareResults(stg_result, prd_result);
-    // console.log(stg_result, prd_result, projects[row]['status']);
+    projects = this.updateResult(row, 'development', dev_result, projects);
+    projects = this.updateResult(row, 'staging', stg_result, projects);
+    projects = this.updateResult(row, 'production', prd_result, projects);
+
+    projects[row].result = 0;
+    if (!this.hasError(projects[row].development, projects[row].staging, projects[row].production)) {
+      const is_equal = this.compareResults(projects[row].development, projects[row].staging, projects[row].production);
+      projects[row].result = is_equal ? 2 : 1;
+    }
     this.setState({ projects });
   }
 
-  updateText = (row, column, text, projects) => {
-    projects[row][column]['text'] = text;
+  updateResult = (row, column, result, projects) => {
+    if (!projects[row][column]) {
+      return projects;
+    }
+    projects[row][column]['error'] = result.error;
+    projects[row][column]['text'] = result.text;
     return projects;
   }
 
-  compareResults = (a, b) => {
-    if (a.text === b.text) {
-      return 2;
-    }
-    return 1;
+  hasError = (a, b, c) => {
+    return (a && a.error) || (b && b.error) || (c && c.error);
+  }
+
+  compareResults = (a, b, c) => {
+    const a_b = (a && b) ? (a.text === b.text) : true;
+    const a_c = (a && c) ? (a.text === c.text) : true;
+    const b_c = (b && c) ? (b.text === c.text) : true;
+    return a_b && a_c && b_c;
   }
 
   renderLink = (cellInfo) => {
-    const cell = this.state.projects[cellInfo.index][cellInfo.column.id];
+    const cell = this.state.projects[cellInfo.index][cellInfo.column.id] || {};
     return (
       <a
         onClick={(e) => {
           e.preventDefault();
           this.triggerLink(cellInfo.index, cellInfo.column.id)
         }}
-        href={ cell.url }
+        href={ cell.url || "" }
         rel="noopener noreferrer"
         target="_blank">
         { cellInfo.value }
@@ -128,6 +148,9 @@ class Table extends React.Component {
   getLinkStatus(row, column) {
     const projects = [...this.state.projects];
     const cell = projects[row][column];
+    if (!cell || !cell.url) {
+      return new Promise((resolve, _) => resolve({ text: '', error: false }));
+    }
     cell.text = 'Loading...';
 
     this.setState({ projects });
@@ -253,6 +276,11 @@ class Table extends React.Component {
             Header: 'Result',
             accessor: 'result',
             width: 66,
+          }, {
+            id: 'development',
+            Header: 'Development',
+            accessor: d => (d.development && (d.development.text || d.development.url)),
+            Cell: this.renderLink
           }, {
             id: 'staging',
             Header: 'Staging',
